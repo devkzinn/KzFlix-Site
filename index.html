@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" id="meta-viewport" />
+  <title>KzFlix Filmes & Séries</title>
+  <link rel="icon" href="imagens/Kz Logo.webp" type="image/png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <!-- Botão de login removido, login obrigatório -->
+    <div class="perfil-container">
+      <button id="btn-perfil" aria-label="Abrir menu de perfil">⚙️</button>
+      <ul id="menu-perfil" class="menu-perfil" role="menu" aria-label="Menu de Perfil">
+        <li role="menuitem" tabindex="0" id="toggle-dark">🌙 Alternar Dark Mode</li>
+      </ul>
+    </div>
+
+    <div class="titulo-centralizado">
+      <h1>
+        <span class="kz-vermelho">Kz</span>
+        <span class="kz-texto">Flix Filmes & Séries</span>
+      </h1>
+      <p>Desfrute das melhores produções!</p>
+    </div>
+
+    <div class="campo-busca">
+      <input type="text" id="busca" placeholder="🔎 Buscar por título ou gênero..." autocomplete="off" aria-label="Buscar por título ou gênero" />
+      <ul id="lista-generos" class="lista-generos" role="listbox" tabindex="-1" aria-label="Lista de gêneros">
+        <li data-genero="all" tabindex="0" role="option">Todos</li>
+        <li data-genero="ação" tabindex="0" role="option">Ação</li>
+        <li data-genero="aventura" tabindex="0" role="option">Aventura</li>
+        <li data-genero="comédia" tabindex="0" role="option">Comédia</li>
+        <li data-genero="drama" tabindex="0" role="option">Drama</li>
+        <li data-genero="terror" tabindex="0" role="option">Terror</li>
+        <li data-genero="ficção científica" tabindex="0" role="option">Ficção Científica</li>
+        <li data-genero="fantasia" tabindex="0" role="option">Fantasia</li>
+        <li data-genero="documentário" tabindex="0" role="option">Documentário</li>
+        <li data-genero="animação" tabindex="0" role="option">Animação</li>
+      </ul>
+    </div>
+  </header>
+  <div class="filtros" role="group" aria-label="Filtros de tipo">
+    <button class="active" data-type="all" aria-pressed="true">Todos</button>
+    <button data-type="movie" aria-pressed="false">Filmes</button>
+    <button data-type="series" aria-pressed="false">Séries</button>
+    <button
+      id="btn-home"
+      style="margin-left: 10px; padding: 10px 20px; border: none; background: #e50914; color: white; border-radius: 5px; cursor: pointer; display: none;"
+    >
+      Sair da pesquisa
+    </button>
+  </div>
+  <section id="lancamentos" style="margin: 40px 0;">
+    <h2 class="secao-titulo">🔥 Adicionados Recentemente</h2>
+    <div class="vitrine-scroll" id="vitrine-lancamentos">
+      <!-- Os lançamentos serão inseridos aqui -->
+    </div>
+  </section>
+
+  <!-- Cria a seção "Continuar Assistindo" abaixo dos lançamentos -->
+  <section id="continuar-assistindo" style="margin: 40px 0; position: relative; background: linear-gradient(90deg,#181818 0%,#222 100%); border-radius: 18px; box-shadow: 0 4px 24px #0004; padding: 28px 18px 24px 18px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
+      <h2 style="font-size:1.5rem; color:#fff; margin:0; font-weight:bold; letter-spacing:1px; text-shadow:0 2px 8px #0008;">⏳ Continuar Assistindo</h2>
+      <button id="btn-limpar-historico" style="background:#e50914;color:#fff;border:none;padding:8px 18px;border-radius:24px;cursor:pointer;font-size:14px;display:none;box-shadow:0 2px 8px #0004;">🗑️ Limpar Histórico</button>
+    </div>
+    <div id="vitrine-continuar" class="vitrine-scroll" style="display:flex;gap:18px;overflow-x:auto;padding-bottom:8px;"></div>
+  </section>
+
+
+  <main>
+    <div class="lista" id="lista" aria-live="polite" aria-label="Lista de filmes e séries"></div>
+    <button id="btn-carregar-mais" style="display:none; margin: 20px auto; padding: 12px 24px; font-size: 16px; border-radius: 6px; background: #1db954; color: white; border: none; cursor: pointer; display: block;">
+    Carregar mais
+    </button>
+
+  </main>
+
+  <!-- Modal Episódios -->
+  <div id="modal-episodios" role="dialog" aria-modal="true" aria-labelledby="modal-titulo" tabindex="-1">
+    <div class="modal-conteudo">
+      <h2 id="modal-titulo"></h2>
+      <label for="select-temporada">Selecione a temporada:</label>
+      <select id="select-temporada" aria-label="Selecione a temporada"></select>
+      <label for="select-episodio">Selecione o episódio:</label>
+  <select id="select-episodio" aria-label="Selecione o episódio"></select>
+      <button id="btn-fechar-modal" style="background:#e50914; margin-top:10px;">❌ Fechar</button>
+    </div>
+  </div>
+
+  <!-- Login removed: app now opens directly -->
+    
+  <!-- Modal Player -->
+  <div id="modal-player" role="dialog" aria-modal="true" tabindex="-1">
+    <div style="position:relative; height:100%;">
+      <button class="fullscreen-player" aria-label="Tela cheia" style="position:absolute;top:10px;right:10px;background:rgba(30,30,30,0.9);border:none;color:#fff;font-size:20px;padding:8px 12px;border-radius:50px;cursor:pointer;z-index:11;transition:background 0.3s;">⛶</button>
+      <button class="fechar-player" aria-label="Fechar player" style="position:absolute;top:10px;right:60px;">❌</button>
+      <iframe
+        id="iframe-player"
+        src=""
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        title="Player de vídeo"
+      ></iframe>
+  <button class="pular-capitulo-player-global" aria-label="Pular capítulo" style="position:absolute;right:18px;bottom:18px;background:#1db954;border:none;color:#fff;font-size:18px;padding:0 22px 0 14px;border-radius:28px;min-width:120px;height:48px;display:flex;align-items:center;gap:10px;cursor:pointer;z-index:20000;transition:background 0.3s;display:none;box-shadow:0 2px 8px rgba(0,0,0,0.3);"><span style="font-size:22px;">⏭️</span> <span class="pular-label">Pular Episódio</span></button>
+    </div>
+  </div>
+  <!-- Adicione este CSS dentro do <style> principal, de preferência após os estilos de .vitrine-card -->
+
+<script src="dados.js"></script>
+<script>
+// Login removed: previously handled by login.js and modal markup
+    const lista = document.getElementById("lista");
+    let dadosFiltrados = [];
+    let limiteInicial = 0;
+    const QUANTIDADE_POR_PAGINA = 10;
+    const botoes = document.querySelectorAll(".filtros button");
+    const campoBusca = document.getElementById("busca");
+    const listaGeneros = document.getElementById("lista-generos");
+
+  const modalEpisodios = document.getElementById("modal-episodios");
+  const modalTitulo = document.getElementById("modal-titulo");
+  const selectTemporada = document.getElementById("select-temporada");
+  const selectEpisodio = document.getElementById("select-episodio");
+  const btnFecharModal = document.getElementById("btn-fechar-modal");
+
+    const modalPlayer = document.getElementById("modal-player");
+    const iframePlayer = document.getElementById("iframe-player");
+
+    const btnFecharPlayer = modalPlayer.querySelector(".fechar-player");
+    const btnFullscreenPlayer = modalPlayer.querySelector(".fullscreen-player");
+    const btnPularCapitulo = document.querySelector('.pular-capitulo-player-global');
+
+    // --- Controle de exibição do botão fullscreen no modo fullscreen ---
+    let fullscreenBtnTimeout = null;
+    let fullscreenBtnHidden = false;
+    function hideFullscreenBtn() {
+      if (modalPlayer.classList.contains('simulacao-fullscreen-mobile') || document.fullscreenElement) {
+        btnFullscreenPlayer.classList.add('fullscreen-btn-hide');
+        fullscreenBtnHidden = true;
+      }
+    }
+    function showFullscreenBtn() {
+      btnFullscreenPlayer.classList.remove('fullscreen-btn-hide');
+      fullscreenBtnHidden = false;
+      if (modalPlayer.classList.contains('simulacao-fullscreen-mobile') || document.fullscreenElement) {
+        if (fullscreenBtnTimeout) clearTimeout(fullscreenBtnTimeout);
+        fullscreenBtnTimeout = setTimeout(hideFullscreenBtn, 3000);
+      }
+    }
+    // Detecta movimento para reexibir
+    function setupFullscreenBtnAutoHide() {
+      const eventos = [
+        "mousemove", "pointermove", "touchstart", "touchmove", "keydown", "wheel"
+      ];
+      // Document (fora do player)
+      eventos.forEach(ev => {
+        document.addEventListener(ev, () => {
+          if (modalPlayer.classList.contains('simulacao-fullscreen-mobile') || document.fullscreenElement) {
+            showFullscreenBtn();
+          }
+        }, { passive: true });
+      });
+      // Modal player (dentro do player, exceto iframe)
+      eventos.forEach(ev => {
+        modalPlayer.addEventListener(ev, () => {
+          if (modalPlayer.classList.contains('simulacao-fullscreen-mobile') || document.fullscreenElement) {
+            showFullscreenBtn();
+          }
+        }, { passive: true });
+      });
+
+      // Overlay para capturar eventos sobre o iframe
+      let overlay = null;
+      function addOverlay() {
+        if (!overlay) {
+          overlay = document.createElement('div');
+          overlay.style.position = 'absolute';
+          overlay.style.top = 0;
+          overlay.style.left = 0;
+          overlay.style.width = '100%';
+          overlay.style.height = '100%';
+          overlay.style.zIndex = 10;
+          overlay.style.background = 'transparent';
+          overlay.style.pointerEvents = 'none';
+          overlay.style.display = 'none';
+          // Só ativa pointer-events quando o botão está oculto
+          ['mousemove','pointermove','touchmove'].forEach(ev => {
+            overlay.addEventListener(ev, () => {
+              if (modalPlayer.classList.contains('simulacao-fullscreen-mobile') || document.fullscreenElement) {
+                showFullscreenBtn();
+                overlay.style.pointerEvents = 'none'; // volta a não bloquear
+              }
+            }, { passive: true });
+          });
+          overlay.tabIndex = -1;
+          const modalDiv = modalPlayer.querySelector('div');
+          modalDiv.appendChild(overlay);
+        }
+        overlay.style.display = 'block';
+        // Se o botão está oculto, ativa pointer-events para capturar movimento
+        if (btnFullscreenPlayer.classList.contains('fullscreen-btn-hide')) {
+          overlay.style.pointerEvents = 'auto';
+        } else {
+          overlay.style.pointerEvents = 'none';
+        }
+      }
+      function removeOverlay() {
+        if (overlay) overlay.style.display = 'none';
+      }
+
+      // Sempre que o botão some, overlay ativa pointer-events
+      function monitorBtnState() {
+        const obsBtn = new MutationObserver(() => {
+          if (!overlay) return;
+          if (btnFullscreenPlayer.classList.contains('fullscreen-btn-hide')) {
+            overlay.style.pointerEvents = 'auto';
+          } else {
+            overlay.style.pointerEvents = 'none';
+          }
+        });
+        obsBtn.observe(btnFullscreenPlayer, { attributes: true, attributeFilter: ['class'] });
+      }
+      monitorBtnState();
+      // Ativa/desativa overlay conforme fullscreen
+      document.addEventListener('fullscreenchange', () => {
+        if (document.fullscreenElement || modalPlayer.classList.contains('simulacao-fullscreen-mobile')) {
+          addOverlay();
+        } else {
+          removeOverlay();
+        }
+      });
+      // Também observa simulação mobile
+      const obs = new MutationObserver(() => {
+        if (modalPlayer.classList.contains('simulacao-fullscreen-mobile')) {
+          addOverlay();
+        } else {
+          removeOverlay();
+        }
+      });
+      obs.observe(modalPlayer, { attributes: true, attributeFilter: ['class'] });
+    }
+    setupFullscreenBtnAutoHide();
+
+    // Reposiciona o botão abaixo do modal player ao abrir
+    function posicionarPularCapitulo() {
+      // modalDiv já foi declarado acima
+      if (!modalPlayer.classList.contains('show')) {
+        btnPularCapitulo.style.display = 'none';
+        return;
+      }
+      // Pega a posição do modal na tela
+      const rect = modalDiv.getBoundingClientRect();
+      btnPularCapitulo.style.position = 'absolute';
+      btnPularCapitulo.style.left = (rect.right - btnPularCapitulo.offsetWidth) + 'px';
+      btnPularCapitulo.style.top = (rect.bottom + 12 + window.scrollY) + 'px';
+      btnPularCapitulo.style.right = '';
+      btnPularCapitulo.style.bottom = '';
+    }
+
+    // Chama ao abrir modal player e ao redimensionar
+    window.addEventListener('resize', () => {
+      if (btnPularCapitulo.style.display !== 'none') {
+        posicionarPularCapitulo();
+      }
+    });
+
+    // Variáveis para controle do episódio atual
+    window.episodioAtualInfo = null;
+    let tipoFiltro = "all";
+    let filtroGenero = "all";
+    let serieAtual = null; // <-- Adiciona variável global para guardar a série aberta
+
+    // Exibir lista inicial
+    exibirLista(dados, true);
+
+    // Filtrar por tipo (Filme, Série, Todos)
+    botoes.forEach((botao) => {
+      botao.addEventListener("click", () => {
+        botoes.forEach((b) => {
+          b.classList.remove("active");
+          b.setAttribute("aria-pressed", "false");
+        });
+        botao.classList.add("active");
+        botao.setAttribute("aria-pressed", "true");
+        tipoFiltro = botao.getAttribute("data-type");
+        campoBusca.value = "";
+        filtroGenero = "all";
+        listaGeneros.style.display = "none";
+        exibirLista(filtrarDados(), true);
+        document.getElementById("btn-home").style.display = tipoFiltro === "all" ? "none" : "inline-block";
+      });
+    });
+
+    // Botão sair da pesquisa
+    document.getElementById("btn-home").addEventListener("click", () => {
+      tipoFiltro = "all";
+      filtroGenero = "all";
+      campoBusca.value = "";
+      listaGeneros.style.display = "none";
+      botoes.forEach((b) => {
+        b.classList.remove("active");
+        b.setAttribute("aria-pressed", "false");
+      });
+      botoes[0].classList.add("active");
+      botoes[0].setAttribute("aria-pressed", "true");
+      exibirLista(dados, true);
+      document.getElementById("btn-home").style.display = "none";
+    });
+
+    // Mostrar/ocultar lista de gêneros
+    campoBusca.addEventListener("focus", () => {
+      listaGeneros.style.display = "block";
+    });
+
+    campoBusca.addEventListener("blur", () => {
+      setTimeout(() => {
+        listaGeneros.style.display = "none";
+      }, 150);
+    });
+
+    // Seleção de gênero da lista
+    listaGeneros.querySelectorAll("li").forEach((item) => {
+      item.addEventListener("click", () => {
+        filtroGenero = item.getAttribute("data-genero");
+        campoBusca.value = filtroGenero === "all" ? "" : filtroGenero;
+        exibirLista(filtrarDados(), true);
+        listaGeneros.style.display = "none";
+      });
+      item.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          item.click();
+        }
+      });
+    });
+
+    // Busca por título ou gênero no campo de busca (com debounce)
+    // Debounce: evita filtragens a cada tecla, melhora performance/UX
+    function debounce(fn, wait = 300) {
+      let t = null;
+      const debounced = function(...args) {
+        if (t) clearTimeout(t);
+        t = setTimeout(() => {
+          t = null;
+          fn.apply(this, args);
+        }, wait);
+      };
+      debounced.cancel = () => { if (t) { clearTimeout(t); t = null; } };
+      return debounced;
+    }
+
+    const realizarBusca = () => {
+      filtroGenero = campoBusca.value.toLowerCase();
+      exibirLista(filtrarDados(), true);
+    };
+
+    const realizarBuscaDebounced = debounce(realizarBusca, 300);
+
+    campoBusca.addEventListener('input', (e) => {
+      // Não executa imediatamente — usa debounce
+      realizarBuscaDebounced();
+    });
+
+    // Se o usuário pressionar Enter, executa a busca imediatamente
+    campoBusca.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        realizarBuscaDebounced.cancel();
+        realizarBusca();
+      }
+    });
+
+    // Utilitário robusto para normalizar strings antes de comparar (remove acentos, lower)
+    function normalizeForCompare(s) {
+      try {
+        if (!s && s !== 0) return '';
+        return String(s).normalize('NFD').replace(/\p{Diacritic}/gu, '').replace(/[^\w\s-]/g, '').toLowerCase();
+      } catch (e) {
+        // Fallback simples
+        return (s || '').toString().toLowerCase();
+      }
+    }
+
+    function getCardsLimit() {
+  // Se for desktop grande, mostra 14 cards por vez
+  if (window.innerWidth >= 1800 && window.innerHeight >= 900) return 14;
+  return 10;
+}
+
+// Lazy-loading de imagens com IntersectionObserver
+function observeLazyImages() {
+  const lazyImages = document.querySelectorAll('img.lazy');
+  if (!lazyImages.length) return;
+  if ('IntersectionObserver' in window) {
+    if (!window._kzLazyObserver) {
+      window._kzLazyObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            const img = entry.target;
+            if (img.dataset && img.dataset.src) {
+              img.src = img.dataset.src;
+              img.removeAttribute('data-src');
+            }
+            img.classList.remove('lazy');
+            window._kzLazyObserver.unobserve(img);
+          }
+        });
+      }, { rootMargin: '200px 0px', threshold: 0.01 });
+    }
+    lazyImages.forEach(img => {
+      window._kzLazyObserver.observe(img);
+    });
+  } else {
+    // fallback: carregar imediatamente
+    lazyImages.forEach(img => {
+      if (img.dataset && img.dataset.src) img.src = img.dataset.src;
+      img.classList.remove('lazy');
+    });
+  }
+}
+
+    // Função que filtra os dados de acordo com os filtros
+    function filtrarDados() {
+      const buscaTexto = normalizeForCompare(campoBusca.value.trim());
+      const filtroNormalized = normalizeForCompare(filtroGenero === 'all' ? '' : filtroGenero);
+      return dados.filter((item) => {
+        const tipoOk = tipoFiltro === "all" || (item && item.tipo === tipoFiltro);
+        if (!item) return false;
+        const tituloNorm = normalizeForCompare(item.titulo || '');
+        const buscaTitulo = buscaTexto ? tituloNorm.includes(buscaTexto) : true;
+        let buscaGenero = true;
+        if (filtroNormalized) {
+          const gens = Array.isArray(item.generos) ? item.generos : [];
+          buscaGenero = gens.some(g => normalizeForCompare(g).includes(filtroNormalized));
+        }
+        return tipoOk && (buscaTitulo || buscaGenero);
+      });
+    }
+
+    // Atualize o uso do limite em todas as telas:
+    // Exibir lista principal
+    function exibirLista(listaDados, reset = true, autoFill = true, attempts = 0) {
+      const btnMais = document.getElementById("btn-carregar-mais");
+      const QUANTIDADE_POR_PAGINA = getCardsLimit();
+      const MAX_AUTO_FILL_ATTEMPTS = 6; // evita loop infinito ao tentar preencher a viewport
+
+      if (reset) {
+        lista.innerHTML = "";
+        limiteInicial = 0;
+        dadosFiltrados = listaDados;
+      }
+
+      const proximoLote = dadosFiltrados.slice(limiteInicial, limiteInicial + QUANTIDADE_POR_PAGINA);
+
+      if (proximoLote.length === 0 && limiteInicial === 0) {
+        lista.innerHTML = "<p style='text-align:center;'>Nenhum resultado encontrado.</p>";
+        btnMais.style.display = "none";
+        return;
+      }
+
+      proximoLote.forEach((item) => {
+        const card = document.createElement("article");
+        card.className = "card";
+        card.setAttribute("tabindex", "0");
+        card.setAttribute("role", "region");
+        card.setAttribute("aria-label", item.titulo);
+
+  const img = document.createElement("img");
+  img.dataset.src = item.imagem;
+  img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+  img.className = 'lazy';
+  img.alt = `Imagem do ${item.tipo === "movie" ? "filme" : "série"} ${item.titulo}`;
+  img.loading = "lazy";
+
+        const anoOverlay = document.createElement("div");
+        anoOverlay.className = "card-ano-overlay";
+        anoOverlay.textContent = item.ano || "";
+
+        const cardBody = document.createElement("div");
+        cardBody.className = "card-body";
+
+        const titulo = document.createElement("h3");
+        titulo.className = "card-title";
+        titulo.textContent = item.titulo;
+
+        const ano = document.createElement("p");
+        ano.className = "card-ano";
+        ano.textContent = item.ano || "";
+
+        const desc = document.createElement("p");
+        desc.className = "card-desc";
+        desc.textContent = item.descricao;
+
+        cardBody.appendChild(titulo);
+        cardBody.appendChild(ano);
+        cardBody.appendChild(desc);
+
+        const botoesContainer = document.createElement("div");
+        botoesContainer.className = "vitrine-botoes";
+
+        // Só exibe botão de trailer (não mostramos botão de assistir direto aos vídeos)
+        if (item.trailer) {
+          const btnTrailer = document.createElement("button");
+          btnTrailer.className = "assistir-btn trailer";
+          btnTrailer.textContent = "▶️ Trailer";
+          btnTrailer.setAttribute("aria-label", `Trailer ${item.titulo}`);
+          btnTrailer.addEventListener("click", (e) => { e.stopPropagation(); abrirModalPlayer(item.trailer); });
+          botoesContainer.appendChild(btnTrailer);
+        }
+
+        cardBody.appendChild(botoesContainer);
+        card.appendChild(img);
+        card.appendChild(cardBody);
+        lista.appendChild(card);
+      });
+
+  limiteInicial += QUANTIDADE_POR_PAGINA;
+  btnMais.style.display = limiteInicial < dadosFiltrados.length ? "block" : "none";
+  // ativa lazy-loading nas imagens adicionadas
+  observeLazyImages();
+
+  // Auto-fill: se a página ainda não é rolável e há mais itens, carrega mais lotes
+  // Tenta algumas vezes para evitar loops infinitos (ex: poucas imagens ou telas muito grandes)
+  if (autoFill && attempts < MAX_AUTO_FILL_ATTEMPTS && btnMais.style.display === 'block') {
+    // espera um tick para o layout atualizar (imagens lazy podem ainda não ter trocado src)
+    setTimeout(() => {
+      const pageHeight = document.documentElement.scrollHeight || document.body.scrollHeight;
+      const viewport = window.innerHeight || document.documentElement.clientHeight;
+      const threshold = 140; // margem para header/espacamento
+      if (pageHeight <= viewport - threshold) {
+        // carrega próximo lote automaticamente
+        exibirLista(dadosFiltrados, false, true, attempts + 1);
+      }
+    }, 100);
+  }
+}
+
+
+    // Modal Episódios
+    function abrirModalEpisodios(serie) {
+      serieAtual = serie; // <-- Guarda a série atualmente aberta
+      modalTitulo.textContent = `Temporadas de ${serie.titulo}`;
+      selectTemporada.innerHTML = "";
+      selectEpisodio.innerHTML = "";
+      
+
+      serie.temporadas.forEach((temp) => {
+        const option = document.createElement("option");
+        option.value = temp.numero;
+        option.textContent = `Temporada ${temp.numero}`;
+        selectTemporada.appendChild(option);
+      });
+
+      // Quando mudar a temporada, carregar os episódios
+      selectTemporada.onchange = () => {
+        carregarEpisodios(serie, Number(selectTemporada.value));
+      };
+
+      // Inicializa com a primeira temporada
+      if (serie.temporadas.length > 0) {
+        selectTemporada.value = serie.temporadas[0].numero;
+        carregarEpisodios(serie, serie.temporadas[0].numero);
+      }
+
+      modalEpisodios.style.display = "flex";
+      modalEpisodios.focus();
+
+      btnFecharModal.onclick = fecharModalEpisodios;
+    }
+
+    function carregarEpisodios(serie, numTemporada) {
+      selectEpisodio.innerHTML = "";
+      const temporada = serie.temporadas.find((t) => t.numero === numTemporada);
+      if (!temporada) return;
+
+      temporada.episodios.forEach((epi) => {
+        const option = document.createElement("option");
+        option.value = epi.numero;
+        option.textContent = `Episódio ${epi.numero} - ${epi.titulo}`;
+        selectEpisodio.appendChild(option);
+      });
+
+  selectEpisodio.value = temporada.episodios[0].numero;
+    }
+
+    
+
+    function fecharModalEpisodios() {
+      modalEpisodios.style.display = "none";
+    }
+
+
+    
+
+    // Fullscreen e orientação paisagem
+    btnFullscreenPlayer.onclick = async function() {
+      const modalDiv = modalPlayer.querySelector('div');
+      const isMobile = /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|Mobile/i.test(navigator.userAgent);
+      // Sempre tenta fullscreen nativo primeiro
+      if (!document.fullscreenElement) {
+        // Oculta todos os botões, exceto o fullscreen
+        btnFecharPlayer.style.display = 'none';
+        btnPularCapitulo.style.display = 'none';
+        btnSalvarPonto.style.display = 'none';
+        btnFullscreenPlayer.style.display = 'block';
+        let entrouFullscreen = false;
+        // Tenta API nativa
+        if (modalDiv.requestFullscreen) {
+          try {
+            await modalDiv.requestFullscreen();
+            entrouFullscreen = true;
+          } catch (e) {}
+        } else if (modalDiv.webkitRequestFullscreen) {
+          try {
+            await modalDiv.webkitRequestFullscreen();
+            entrouFullscreen = true;
+          } catch (e) {}
+        } else if (modalDiv.msRequestFullscreen) {
+          try {
+            await modalDiv.msRequestFullscreen();
+            entrouFullscreen = true;
+          } catch (e) {}
+        }
+        // Tenta travar orientação para landscape
+        if (screen.orientation && screen.orientation.lock) {
+          try {
+            await screen.orientation.lock('landscape');
+          } catch (e) {}
+        }
+        // Se não entrou em fullscreen nativo, simula no mobile
+        if (!entrouFullscreen && isMobile) {
+          const jaFullscreen = modalPlayer.classList.contains('simulacao-fullscreen-mobile');
+          let aviso = document.getElementById('aviso-orientacao');
+          if (!jaFullscreen) {
+            modalPlayer.classList.add('simulacao-fullscreen-mobile');
+            btnFecharPlayer.style.display = 'none';
+            btnPularCapitulo.style.display = 'none';
+            btnFullscreenPlayer.style.display = 'block';
+            // Mensagem para girar o aparelho se não travou
+            if (!aviso) {
+              aviso = document.createElement('div');
+              aviso.id = 'aviso-orientacao';
+              aviso.innerText = 'Gire o aparelho para paisagem para melhor experiência.';
+              aviso.style.position = 'fixed';
+              aviso.style.bottom = '24px';
+              aviso.style.left = '50%';
+              aviso.style.transform = 'translateX(-50%)';
+              aviso.style.background = 'rgba(0,0,0,0.8)';
+              aviso.style.color = '#fff';
+              aviso.style.padding = '10px 18px';
+              aviso.style.borderRadius = '20px';
+              aviso.style.fontSize = '16px';
+              aviso.style.zIndex = '100001';
+              document.body.appendChild(aviso);
+              setTimeout(() => {
+                if (aviso) aviso.remove();
+              }, 4000);
+            }
+          }
+        }
+      } else {
+        // Sai do fullscreen nativo ou simulado
+        if (document.exitFullscreen) {
+          try {
+            await document.exitFullscreen();
+          } catch (e) {}
+        } else if (document.webkitExitFullscreen) {
+          try {
+            await document.webkitExitFullscreen();
+          } catch (e) {}
+        } else if (document.msExitFullscreen) {
+          try {
+            await document.msExitFullscreen();
+          } catch (e) {}
+        }
+        if (screen.orientation && screen.orientation.unlock) {
+          try { screen.orientation.unlock(); } catch (e) {}
+        }
+        // Remove simulação se estiver ativa
+        if (modalPlayer.classList.contains('simulacao-fullscreen-mobile')) {
+          modalPlayer.classList.remove('simulacao-fullscreen-mobile');
+          btnFecharPlayer.style = '';
+          let aviso = document.getElementById('aviso-orientacao');
+          if (aviso) aviso.remove();
+        }
+        // Reexibe botões se necessário
+        btnFecharPlayer.style.display = '';
+        if (episodioAtualInfo && episodioAtualInfo.tipo === 'serie') {
+          btnPularCapitulo.style.display = 'inline-block';
+        }
+      }
+    };
+
+    // Reexibe botões ao sair do fullscreen
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement) {
+        // Reexibe botões ao sair do fullscreen
+        btnFecharPlayer.style.display = '';
+        btnFullscreenPlayer.style.display = 'block';
+        btnFullscreenPlayer.classList.remove('fullscreen-btn-hide');
+        fullscreenBtnHidden = false;
+        if (fullscreenBtnTimeout) clearTimeout(fullscreenBtnTimeout);
+        btnSalvarPonto.style.display = 'inline-block';
+        if (episodioAtualInfo && episodioAtualInfo.tipo === 'serie') {
+          btnPularCapitulo.style.display = 'inline-block';
+        } else {
+          btnPularCapitulo.style.display = 'none';
+        }
+      } else {
+        // Entrou em fullscreen: inicia timer para esconder
+        showFullscreenBtn();
+      }
+    });
+    // Esconde botão fullscreen ao entrar em simulação mobile
+    const observer = new MutationObserver(() => {
+      if (modalPlayer.classList.contains('simulacao-fullscreen-mobile')) {
+        showFullscreenBtn();
+      } else {
+        btnFullscreenPlayer.classList.remove('fullscreen-btn-hide');
+        fullscreenBtnHidden = false;
+        if (fullscreenBtnTimeout) clearTimeout(fullscreenBtnTimeout);
+      }
+    });
+    observer.observe(modalPlayer, { attributes: true, attributeFilter: ['class'] });
+    // CSS para esconder o botão fullscreen suavemente
+    const style = document.createElement('style');
+    style.innerHTML = `.fullscreen-btn-hide { opacity: 0 !important; pointer-events: none !important; transition: opacity 0.4s; }`;
+    document.head.appendChild(style);
+
+    btnFecharPlayer.onclick = async function() {
+      let saiuDoFullscreen = false;
+      if (document.fullscreenElement) {
+        try {
+          if (document.exitFullscreen) {
+            await document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            await document.webkitExitFullscreen();
+          } else if (document.msExitFullscreen) {
+            await document.msExitFullscreen();
+          }
+          saiuDoFullscreen = true;
+        } catch (e) {}
+        // Desbloqueia orientação
+        if (screen.orientation && screen.orientation.unlock) {
+          try { screen.orientation.unlock(); } catch (e) {}
+        }
+      }
+      // Sempre fecha o modal, aguarda se saiu do fullscreen
+      if (saiuDoFullscreen) {
+        setTimeout(() => {
+          fecharModalPlayer();
+        }, 200);
+      } else {
+        fecharModalPlayer();
+      }
+    }
+
+    // Função para pular capítulo
+    btnPularCapitulo.onclick = function() {
+      if (!episodioAtualInfo || episodioAtualInfo.tipo !== 'serie') return;
+      const serie = episodioAtualInfo.serie;
+      let numTemp = episodioAtualInfo.temporada;
+      let numEpi = episodioAtualInfo.episodio;
+      const temporada = serie.temporadas.find(t => t.numero === numTemp);
+      if (!temporada) return;
+      const proxTemp = serie.temporadas.find(t => t.numero === numTemp + 1);
+
+      // Próximo episódio na mesma temporada
+      if (numEpi < temporada.episodios.length) {
+        const proximoEpi = temporada.episodios.find(e => e.numero === numEpi + 1);
+        if (proximoEpi) {
+          // Não reproduzimos episódios diretamente – mostrar aviso
+          mostrarApenasTrailersAviso();
+          return;
+        }
+      }
+      // Se for último episódio e tem próxima temporada, vai para o primeiro episódio da próxima temporada
+      if (numEpi === temporada.episodios.length && proxTemp && proxTemp.episodios.length > 0) {
+        // Não reproduzimos episódios diretamente – mostrar aviso
+        mostrarApenasTrailersAviso();
+        return;
+        return;
+      }
+      // Se não há mais episódios, oculta o botão
+      btnPularCapitulo.style.display = 'none';
+    };
+
+    // --- Player controls: focus trap, keyboard handlers, auto show/hide ---
+
+    // coloca/retira atributos tabindex nos controles para controlar foco
+    function setPlayerControlsHidden(hidden) {
+      const controls = modalPlayer.querySelectorAll('button, [tabindex]');
+      controls.forEach(el => {
+        if (hidden) {
+          // remove do fluxo de tabulação, mas preserve atributo original
+          if (!el.hasAttribute('data-old-tabindex')) el.setAttribute('data-old-tabindex', el.getAttribute('tabindex') || '');
+          el.setAttribute('tabindex', '-1');
+        } else {
+          const old = el.getAttribute('data-old-tabindex');
+          if (old === '' || old === null) el.removeAttribute('tabindex'); else el.setAttribute('tabindex', old);
+          el.removeAttribute('data-old-tabindex');
+        }
+      });
+    }
+
+    // Simple focus trap within modalPlayer
+    function enablePlayerFocusTrap() {
+      // remember previously focused element
+      modalPlayer._previouslyFocused = document.activeElement;
+      // find focusable elements inside modalPlayer
+      const focusableSelector = 'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])';
+      const getFocusable = () => Array.from(modalPlayer.querySelectorAll(focusableSelector)).filter(el => el.offsetParent !== null);
+      function handleKey(e) {
+        if (e.key === 'Tab') {
+          const focusable = getFocusable();
+          if (!focusable.length) {
+            e.preventDefault();
+            return;
+          }
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+          if (e.shiftKey) {
+            if (document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        }
+        // ESC closes modal (ensure consistent behavior)
+        if (e.key === 'Escape') {
+          fecharModalPlayer();
+        }
+        // Enter/Space on fullscreen button should toggle fullscreen reliably
+        if ((e.key === 'Enter' || e.key === ' ') && document.activeElement === btnFullscreenPlayer) {
+          e.preventDefault();
+          btnFullscreenPlayer.click();
+        }
+        // Shortcut: 'f' to toggle fullscreen when modal open
+        if (e.key === 'f' || e.key === 'F') {
+          // prefer not to steal input focus inside forms
+          const tag = document.activeElement && document.activeElement.tagName;
+          if (tag !== 'INPUT' && tag !== 'TEXTAREA') {
+            e.preventDefault();
+            btnFullscreenPlayer.click();
+          }
+        }
+      }
+      modalPlayer._playerKeyHandler = handleKey;
+      document.addEventListener('keydown', handleKey);
+      // set initial focus to the modal so keyboard works
+      setTimeout(() => {
+        const focusable = getFocusable();
+        if (focusable.length) focusable[0].focus();
+        else modalPlayer.focus();
+      }, 10);
+    }
+
+    function disablePlayerFocusTrap() {
+      if (modalPlayer._playerKeyHandler) {
+        try { document.removeEventListener('keydown', modalPlayer._playerKeyHandler); } catch (e) {}
+        modalPlayer._playerKeyHandler = null;
+      }
+    }
+
+    // auto show/hide player controls based on pointer activity
+    let _playerAutoHideTimer = null;
+    function startPlayerControlsAutoHide() {
+      const modalDiv = modalPlayer.querySelector('div');
+      function showControls() {
+        setPlayerControlsHidden(false);
+        if (_playerAutoHideTimer) clearTimeout(_playerAutoHideTimer);
+        _playerAutoHideTimer = setTimeout(() => {
+          setPlayerControlsHidden(true);
+        }, 3000);
+      }
+      // show controls initially
+      showControls();
+      modalPlayer._playerPointerHandler = () => showControls();
+      modalPlayer._playerMoveHandler = () => showControls();
+      modalPlayer.addEventListener('mousemove', modalPlayer._playerPointerHandler, { passive: true });
+      modalPlayer.addEventListener('touchstart', modalPlayer._playerPointerHandler, { passive: true });
+      modalPlayer.addEventListener('pointermove', modalPlayer._playerPointerHandler, { passive: true });
+    }
+
+    function stopPlayerControlsAutoHide() {
+      if (modalPlayer._playerPointerHandler) {
+        try {
+          modalPlayer.removeEventListener('mousemove', modalPlayer._playerPointerHandler);
+          modalPlayer.removeEventListener('touchstart', modalPlayer._playerPointerHandler);
+          modalPlayer.removeEventListener('pointermove', modalPlayer._playerPointerHandler);
+        } catch (e) {}
+        modalPlayer._playerPointerHandler = null;
+      }
+      if (_playerAutoHideTimer) {
+        clearTimeout(_playerAutoHideTimer);
+        _playerAutoHideTimer = null;
+      }
+    }
+
+
+    // Fechar modal player ao clicar fora do iframe
+    modalPlayer.addEventListener("click", (e) => {
+      if (e.target === modalPlayer) {
+        fecharModalPlayer();
+      }
+    });
+
+    // Função robusta para fechar o modal player
+    function fecharModalPlayer() {
+      modalPlayer.classList.remove("show");
+      iframePlayer.src = "";
+      btnPularCapitulo.style.display = "none";
+      btnSalvarPonto.style.display = "none";
+      episodioAtualInfo = null;
+      // Libera rolagem e zoom
+      document.body.classList.remove('modal-aberto');
+      const metaViewport = document.getElementById('meta-viewport');
+      if (metaViewport) {
+        metaViewport.setAttribute('content', 'width=device-width, initial-scale=1');
+      }
+      // Cleanup: remove focus trap and control auto-hide handlers
+      disablePlayerFocusTrap();
+      stopPlayerControlsAutoHide();
+      // restore controls tabbable state
+      setPlayerControlsHidden(false);
+      // restore focus to previous element if exists
+      if (modalPlayer._previouslyFocused) {
+        try { modalPlayer._previouslyFocused.focus(); } catch (e) {}
+        modalPlayer._previouslyFocused = null;
+      }
+    }
+
+    // Fechar modal episódios ao clicar fora
+    modalEpisodios.addEventListener("click", (e) => {
+      if (e.target === modalEpisodios) {
+        fecharModalEpisodios();
+      }
+    });
+
+    // Para fechar modais com ESC
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (modalPlayer.style.display === "flex") {
+          fecharModalPlayer();
+        }
+        if (modalEpisodios.style.display === "flex") {
+          fecharModalEpisodios();
+        }
+      }
+    });
+    const btnPerfil = document.getElementById("btn-perfil");
+    const menuPerfil = document.getElementById("menu-perfil");
+    const toggleDark = document.getElementById("toggle-dark");
+
+    // Corrige o menu lateral para abrir e fechar corretamente ao clicar no botão de perfil
+    if (btnPerfil) {
+      btnPerfil.addEventListener("click", (e) => {
+        e.stopPropagation(); // Evita fechar ao clicar no próprio botão
+        atualizarMenuPerfil();
+        if (menuPerfil) {
+          menuPerfil.style.display = menuPerfil.style.display === "block" ? "none" : "block";
+        }
+      });
+    }
+    // Fecha o menu ao clicar fora dele
+    if (menuPerfil) {
+      document.addEventListener("click", (e) => {
+        if (menuPerfil.style.display === "block" && !menuPerfil.contains(e.target) && e.target !== btnPerfil) {
+          menuPerfil.style.display = "none";
+        }
+      });
+    }
+
+    // Garante que o menu lateral seja sempre reconstruído ao abrir, incluindo Donate
+    if (btnPerfil) {
+      btnPerfil.addEventListener("click", () => {
+        atualizarMenuPerfil(); // Reconstrói o menu toda vez que abrir
+        if (menuPerfil) {
+          menuPerfil.style.display = menuPerfil.style.display === "block" ? "none" : "block";
+        }
+      });
+    }
+
+    // Garante que o menu começa vazio e é sempre reconstruído
+    function atualizarMenuPerfil() {
+      if (menuPerfil) {
+        menuPerfil.innerHTML = '';
+        // Donate
+        const liDonate = document.createElement('li');
+        liDonate.role = 'menuitem';
+        liDonate.tabIndex = 0;
+        liDonate.textContent = '💸 Donate';
+        liDonate.className = 'menu-btn';
+        liDonate.onclick = () => { mostrarPopupPix(); };
+        liDonate.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        mostrarPopupPix();
+      }
+    });
+        menuPerfil.appendChild(liDonate);
+        // Download APK
+        const liDownloadApk = document.createElement('li');
+        liDownloadApk.role = 'menuitem';
+        liDownloadApk.tabIndex = 0;
+        liDownloadApk.textContent = '📲 Download APK';
+        liDownloadApk.className = 'menu-btn';
+        liDownloadApk.onclick = () => {
+          window.open('https://www.mediafire.com/file/ts62shgl7t4wfm6/KzFlix.apk/file', '_blank');
+        };
+        menuPerfil.appendChild(liDownloadApk);
+        // Dark mode
+        const liDark = document.createElement('li');
+        liDark.role = 'menuitem';
+        liDark.tabIndex = 0;
+        liDark.textContent = '🌙 Alterar Dark Mode';
+        liDark.className = 'menu-btn';
+        liDark.onclick = () => {
+          document.body.classList.toggle('modo-claro');
+          localStorage.setItem('modo', document.body.classList.contains('modo-claro') ? 'claro' : 'escuro');
+        };
+        menuPerfil.appendChild(liDark);
+      }
+    }
+
+    btnPerfil.addEventListener("click", () => {
+      menuPerfil.style.display = menuPerfil.style.display === "block" ? "none" : "block";
+    });
+
+    // Fechar menu clicando fora
+    document.addEventListener("click", (e) => {
+      if (!menuPerfil.contains(e.target) && e.target !== btnPerfil) {
+        menuPerfil.style.display = "none";
+      }
+    });
+
+    // Alternar modo escuro
+    toggleDark.addEventListener("click", () => {
+      document.body.classList.toggle("modo-claro");
+      localStorage.setItem("modo", document.body.classList.contains("modo-claro") ? "claro" : "escuro");
+    });
+    // Carregar tema salvo
+    if (localStorage.getItem("modo") === "claro") {
+      document.body.classList.add("modo-claro");
+    }
+    document.getElementById("btn-carregar-mais").addEventListener("click", () => {
+    exibirLista(dadosFiltrados, false);
+    });
+    // Exibir lançamentos recentes (com base em alguns títulos)
+    function exibirLancamentosRecentes() {
+  const ordemDesejada = [
+    "Invocação do mal 4: O Último Ritual",
+    "Demon Slayer: Kimetsu no Yaiba",
+    "Hotel Transilvânia",
+    "Elio",
+    "Os Caras Malvados 2",
+    "Lilo & Stitch",
+    "Amor de Aluguel",
+    "Wandinha",
+    "Thunderbolts",
+    "Smurfs",
+  ];
+  const lancamentosRecentes = ordemDesejada
+    .map(titulo => dados.find(item => normalizeForCompare(item && item.titulo) === normalizeForCompare(titulo)))
+    .filter(Boolean)
+    .slice(0, getCardsLimit());
+  const vitrineContainer = document.getElementById("vitrine-lancamentos");
+  vitrineContainer.innerHTML = ""; // Limpa vitrine antes de adicionar
+
+  lancamentosRecentes.forEach((item, index) => {
+    const card = document.createElement("div");
+    card.className = "vitrine-card";
+
+  const img = document.createElement("img");
+  img.dataset.src = item.imagem;
+  img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+  img.className = 'lazy';
+  img.alt = `Imagem do lançamento ${item.titulo}`;
+  img.loading = "lazy";
+
+    const info = document.createElement("div");
+    info.className = "vitrine-info";
+
+    const h3 = document.createElement("h3");
+    h3.textContent = `${index + 1}. ${item.titulo}`;
+
+    const botoes = document.createElement("div");
+    botoes.className = "vitrine-botoes";
+
+    // Não adicionamos botão de assistir nos lançamentos; apenas trailer quando disponível
+    if (item.trailer) {
+      const btnTrailer = document.createElement("button");
+      btnTrailer.textContent = "▶️ Trailer";
+      btnTrailer.classList.add("trailer");
+      btnTrailer.onclick = (e) => { e.stopPropagation(); abrirModalPlayer(item.trailer); };
+      botoes.appendChild(btnTrailer);
+    }
+
+    info.appendChild(h3);
+    info.appendChild(botoes);
+    card.appendChild(img);
+    card.appendChild(info);
+    vitrineContainer.appendChild(card);
+  });
+  // observa imagens carregadas
+  observeLazyImages();
+}
+
+// Mostra aviso de que apenas trailers estão disponíveis
+function mostrarApenasTrailersAviso() {
+  let antigo = document.getElementById('popup-apenas-trailer');
+  if (antigo) antigo.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'popup-apenas-trailer';
+  overlay.style.position = 'fixed';
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.background = 'rgba(0,0,0,0.35)';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.zIndex = 999999;
+  const box = document.createElement('div');
+  box.style.background = '#222';
+  box.style.color = '#fff';
+  box.style.padding = '22px 18px';
+  box.style.borderRadius = '12px';
+  box.style.boxShadow = '0 8px 32px #000a';
+  box.style.textAlign = 'center';
+  box.style.maxWidth = '90vw';
+  box.innerHTML = `
+    <div style="font-size:1.6rem;margin-bottom:8px;">ℹ️ Apenas trailers</div>
+    <div style="color:#ddd;margin-bottom:12px;">Os vídeos completos foram removidos — somente trailers estão disponíveis aqui.</div>
+    <button id="btn-fechar-apenas-trailer" style="background:#1db954;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;">OK</button>
+  `;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  document.getElementById('btn-fechar-apenas-trailer').onclick = function() { overlay.remove(); };
+  overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+}
+
+// Chama ao carregar a página
+exibirLancamentosRecentes();
+
+
+
+// Funções utilitárias para salvar e obter tempo
+function salvarTempoAssistido(usuario, idVideo, tempoSegundos, info) {
+  if (!usuario || !idVideo) return;
+  // Se for série, remove todos os registros anteriores dessa série para o usuário
+  if (info && (info.tipo === 'serie' || info.tipo === 'series')) {
+    const prefix = `visto_${usuario}_`;
+    const serieTitulo = (info.serie && info.serie.titulo) ? info.serie.titulo : info.titulo;
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k.startsWith(prefix)) {
+        try {
+          const obj = JSON.parse(localStorage.getItem(k));
+          if (obj && (obj.tipo === 'serie' || obj.tipo === 'series')) {
+            const objSerieTitulo = (obj.serie && obj.serie.titulo) ? obj.serie.titulo : obj.titulo;
+            if (objSerieTitulo === serieTitulo) {
+              localStorage.removeItem(k);
+            }
+          }
+        } catch {}
+      }
+    }
+  }
+  const chave = `visto_${usuario}_${idVideo}`;
+  // Salva todos os campos do objeto info, não apenas tempo
+  localStorage.setItem(chave, JSON.stringify({
+    ...info,
+    video: idVideo,
+    tempo: tempoSegundos || 0
+  }));
+}
+
+function obterContinuarAssistindo(usuario) {
+  if (!usuario) return [];
+  const prefix = `visto_${usuario}_`;
+  const vistos = [];
+  const seriesMap = {};
+  // Percorre do final para o início para pegar o último registro salvo de cada série
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const k = localStorage.key(i);
+    if (k.startsWith(prefix)) {
+      try {
+        const obj = JSON.parse(localStorage.getItem(k));
+        if (obj && obj.titulo && obj.video && obj.imagem && /^(imagens\/.*\.(jpg|jpeg|png|webp))$/i.test(obj.imagem)) {
+          if ((obj.tipo === 'series' || obj.tipo === 'serie')) {
+            // Para séries, identifica pelo serie.titulo ou titulo
+            const key = (obj.serie && obj.serie.titulo) ? obj.serie.titulo : obj.titulo;
+            if (!seriesMap[key]) {
+              seriesMap[key] = obj;
+            }
+          } else {
+            // Filmes e trailers adiciona normalmente
+            vistos.push(obj);
+          }
+        }
+      } catch {}
+    }
+  }
+  // Adiciona o último episódio salvo de cada série
+  Object.values(seriesMap).forEach(obj => vistos.push(obj));
+  // Mantém ordem de salvamento (ordem de inserção no localStorage)
+  return vistos;
+}
+
+function obterTempoAssistido(usuario, idVideo) {
+  if (!usuario || !idVideo) return 0;
+  const chave = `visto_${usuario}_${idVideo}`;
+  const obj = localStorage.getItem(chave);
+  if (!obj) return 0;
+  try {
+    return JSON.parse(obj).tempo || 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+// Renderiza os cards de continuar assistindo
+function renderizarContinuarAssistindo() {
+  const usuario = localStorage.getItem('usuarioLogado');
+  const container = document.getElementById('vitrine-continuar');
+  const btnLimpar = document.getElementById('btn-limpar-historico');
+  const secao = document.getElementById('continuar-assistindo');
+  if (!container) return;
+  container.innerHTML = '';
+  const vistos = obterContinuarAssistindo(usuario);
+
+  // Mostra ou esconde o botão de limpar histórico
+  if (btnLimpar) btnLimpar.style.display = vistos.length ? 'inline-block' : 'none';
+  // Mostra ou esconde toda a seção "Continuar Assistindo"
+  if (secao) secao.style.display = vistos.length ? 'block' : 'none';
+
+  if (!vistos.length) {
+    container.innerHTML = "<p style='text-align:center;width:100%;color:#aaa;'>Nenhum conteúdo assistido.</p>";
+    return;
+  }
+  vistos.forEach(obj => {
+    let imagem = obj.imagem;
+    if (!imagem || !/^(imagens\/.*\.(jpg|jpeg|png|webp))$/i.test(imagem)) return;
+    if (obj.titulo) {
+      const card = document.createElement('div');
+      card.className = 'vitrine-card';
+      card.style.cursor = 'pointer';
+      card.style.position = 'relative';
+      let infoExtra = '';
+      if ((obj.tipo === 'series' || obj.tipo === 'serie') && (obj.temporada || obj.episodio)) {
+        infoExtra = `<p style='font-size:13px;color:#ccc;margin:2px 0 6px 0;'>Temporada ${obj.temporada || ''} Episódio ${obj.episodio || ''}</p>`;
+      }
+      card.innerHTML = `
+        <img data-src="${imagem}" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" class="lazy" loading="lazy" alt="Capa de ${obj.titulo}">
+        <div class="vitrine-info">
+          <h3>${obj.titulo}</h3>
+          ${infoExtra}
+          <p>🕒 Último ponto: ${formatarTempo(obj.tempo)}</p>
+          <div class="vitrine-botoes">
+            <button class="continuar-btn" style="background:#1db954;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:13px;">Continuar</button>
+          </div>
+        </div>
+      `;
+      // Botão X para remover
+      const btnX = document.createElement('button');
+      btnX.className = 'btn-remover-card';
+      btnX.innerHTML = '&times;';
+      btnX.title = 'Remover este item do histórico';
+      btnX.onclick = function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        // Mostra confirmação antes de remover
+        const overlayId = 'confirm-remove-' + Math.random().toString(36).slice(2,9);
+        const overlay = document.createElement('div');
+        overlay.id = overlayId;
+        overlay.style.position = 'fixed';
+        overlay.style.top = 0;
+        overlay.style.left = 0;
+        overlay.style.width = '100vw';
+        overlay.style.height = '100vh';
+        overlay.style.background = 'rgba(0,0,0,0.45)';
+        overlay.style.display = 'flex';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        overlay.style.zIndex = 999999;
+
+        const box = document.createElement('div');
+        box.style.background = '#222';
+        box.style.color = '#fff';
+        box.style.padding = '22px 18px';
+        box.style.borderRadius = '12px';
+        box.style.boxShadow = '0 8px 32px #000a';
+        box.style.textAlign = 'center';
+        box.style.maxWidth = '90vw';
+        box.style.minWidth = '260px';
+        box.innerHTML = `
+          <div style="font-size:1.4rem;margin-bottom:8px;">❌ Remover item</div>
+          <div style="margin-bottom:12px;color:#ddd;">Tem certeza que deseja remover <strong>${obj.titulo}</strong> do seu histórico?</div>
+          <div style="display:flex;gap:10px;justify-content:center;">
+            <button id="confirm-remove-yes" style="background:#e50914;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;">Remover</button>
+            <button id="confirm-remove-no" style="background:#444;color:#fff;border:none;padding:8px 14px;border-radius:8px;cursor:pointer;">Cancelar</button>
+          </div>
+        `;
+        overlay.appendChild(box);
+        document.body.appendChild(overlay);
+
+        function doRemove() {
+          const usuario = localStorage.getItem('usuarioLogado');
+          if (!usuario) return;
+          const prefix = `visto_${usuario}_`;
+          for (let i = localStorage.length - 1; i >= 0; i--) {
+            const k = localStorage.key(i);
+            if (k.startsWith(prefix)) {
+              try {
+                const objSalvo = JSON.parse(localStorage.getItem(k));
+                if ((obj.tipo === 'series' || obj.tipo === 'serie') && (objSalvo.tipo === 'series' || objSalvo.tipo === 'serie')) {
+                  if (
+                    objSalvo.titulo === obj.titulo &&
+                    String(objSalvo.temporada) === String(obj.temporada) &&
+                    String(objSalvo.episodio) === String(obj.episodio)
+                  ) {
+                    localStorage.removeItem(k);
+                    break;
+                  }
+                } else if (objSalvo.titulo === obj.titulo && objSalvo.video === obj.video) {
+                  localStorage.removeItem(k);
+                  break;
+                }
+              } catch {}
+            }
+          }
+          renderizarContinuarAssistindo();
+        }
+
+        document.getElementById('confirm-remove-yes').onclick = function(ev) {
+          ev.stopPropagation();
+          doRemove();
+          document.getElementById(overlayId).remove();
+        };
+        document.getElementById('confirm-remove-no').onclick = function(ev) {
+          ev.stopPropagation();
+          document.getElementById(overlayId).remove();
+        };
+        overlay.onclick = function(ev) { if (ev.target === overlay) overlay.remove(); };
+      };
+      // Impede que clique na imagem abra o player
+      card.querySelector('img').onclick = function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+      };
+      // Botão continuar
+      card.querySelector('.continuar-btn').onclick = (e) => {
+        e.stopPropagation();
+        let infoToPass = null;
+        if (obj && (obj.tipo === 'series' || obj.tipo === 'serie')) {
+          let serieDados = null;
+          if (typeof dados !== 'undefined' && Array.isArray(dados)) {
+            serieDados = dados.find(f => (f && (f.tipo === 'series' || f.tipo === 'serie')) && normalizeForCompare(f.titulo) === normalizeForCompare(obj.titulo));
+          }
+          infoToPass = {
+            tipo: 'serie',
+            serie: serieDados || { titulo: obj.titulo },
+            temporada: obj.temporada,
+            episodio: obj.episodio
+          };
+        }
+        // Só permite abrir se for trailer; caso contrário, mostramos aviso
+        if (obj && obj.tipo === 'trailer' && obj.video) {
+          abrirModalPlayer(obj.video, infoToPass, obj.tempo);
+        } else {
+          mostrarApenasTrailersAviso();
+        }
+      };
+      // Clique no card abre o player
+      card.onclick = () => {
+        // Ao clicar no card do histórico, só abrimos trailer se for do tipo 'trailer'
+        if (obj && obj.tipo === 'trailer' && obj.video) {
+          abrirModalPlayer(obj.video, null, obj.tempo);
+        } else {
+          mostrarApenasTrailersAviso();
+        }
+      };
+      card.appendChild(btnX);
+    container.appendChild(card);
+    }
+  });
+  // ativa lazy-loading para as imagens da seção continuar assistindo
+  observeLazyImages();
+}
+
+// Formata tempo em segundos para mm:ss
+function formatarTempo(segundos) {
+  const h = Math.floor(segundos / 3600);
+  const m = Math.floor((segundos % 3600) /  60);
+  const s = Math.floor(segundos % 60);
+
+  let str = '';
+  if (h > 0) str += `${h}h`;
+  if (m > 0 || h > 0) str += `${m.toString().padStart(2, '0')}m`;
+  str += `${s.toString().padStart(2, '0')}s`;
+  return str;
+}
+
+// Adiciona botão "Salvar ponto" no player
+(function criarBtnSalvarPonto() {
+  const modalDiv = modalPlayer.querySelector('div');
+  let btn = document.getElementById('btn-salvar-ponto');
+  if (!btn) {
+  btn = document.createElement('button');
+  btn.id = "btn-salvar-ponto";
+  btn.textContent = "💾";
+  btn.style.position = "absolute";
+  btn.style.left = "18px";
+  btn.style.bottom = "18px";
+  btn.style.background = "#1db954";
+  btn.style.color = "#fff";
+  btn.style.border = "none";
+  btn.style.padding = "0";
+  btn.style.borderRadius = "50%";
+  btn.style.width = "48px";
+  btn.style.height = "48px";
+  btn.style.fontSize = "22px";
+  btn.style.cursor = "pointer";
+  btn.style.zIndex = "20000";
+  btn.style.display = "none";
+  modalDiv.appendChild(btn);
+  }
+})();
+
+const btnSalvarPonto = document.getElementById('btn-salvar-ponto');
+
+// Modifique abrirModalPlayer para aceitar tempo inicial
+function getUsuario() {
+  return localStorage.getItem('usuarioLogado') || 'convidado';
+}
+
+function abrirModalPlayer(link, infoEpisodio = null, tempoInicial = null) {
+  let usuario = getUsuario();
+  let idVideo = link.split('?')[0];
+  let tempoSalvo = tempoInicial != null ? tempoInicial : (usuario ? obterTempoAssistido(usuario, idVideo) : 0);
+
+  // Adiciona ?start=tempo na URL do Google Drive se houver tempo salvo
+  let url = link;
+  if (tempoSalvo > 0) {
+    url += (url.includes('?') ? '&' : '?') + 'start=' + Math.floor(tempoSalvo);
+  }
+  iframePlayer.src = url;
+  modalPlayer.classList.add("show");
+  modalPlayer.focus();
+  episodioAtualInfo = infoEpisodio;
+  // don't block the entire page; only the modal needs focus management
+  // accessibility: ensure modal is focusable and trap focus inside
+  modalPlayer.setAttribute('role', 'dialog');
+  modalPlayer.setAttribute('aria-modal', 'true');
+  modalPlayer.tabIndex = -1;
+  // start focus trap and auto-hide controls
+  enablePlayerFocusTrap();
+  startPlayerControlsAutoHide();
+  const metaViewport = document.getElementById('meta-viewport');
+  if (metaViewport) {
+    metaViewport.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no');
+  }
+  // Exibe botão pular capítulo ou próxima temporada
+  if (infoEpisodio && infoEpisodio.tipo === 'serie') {
+    const serie = infoEpisodio.serie;
+    const numTemp = infoEpisodio.temporada;
+    const numEpi = infoEpisodio.episodio;
+    const temporada = serie.temporadas.find(t => t.numero === numTemp);
+    const proxTemp = serie.temporadas.find(t => t.numero === numTemp + 1);
+    const ehUltimoEpi = numEpi === temporada.episodios.length;
+    const temProximoEpi = numEpi < temporada.episodios.length;
+    const temProximaTemporada = proxTemp && proxTemp.episodios.length > 0;
+
+    if (temProximoEpi) {
+      btnPularCapitulo.textContent = '⏭️ Pular Episódio';
+      btnPularCapitulo.style.display = 'inline-block';
+      btnPularCapitulo.disabled = false;
+    } else if (ehUltimoEpi && temProximaTemporada) {
+      btnPularCapitulo.textContent = '⏭️ Próxima Temporada';
+      btnPularCapitulo.style.display = 'inline-block';
+      btnPularCapitulo.disabled = false;
+    } else {
+      btnPularCapitulo.style.display = 'none';
+    }
+    btnPularCapitulo.style.position = 'absolute';
+    btnPularCapitulo.style.bottom = '18px';
+    btnPularCapitulo.style.right = '18px';
+    btnPularCapitulo.style.left = 'auto';
+    btnPularCapitulo.style.top = '';
+    btnPularCapitulo.style.zIndex = '20000';
+    btnPularCapitulo.style.visibility = 'visible';
+    btnPularCapitulo.style.opacity = '1';
+  } else {
+    btnPularCapitulo.style.display = 'none';
+  }
+
+  // Exibe botão salvar ponto
+  btnSalvarPonto.style.display = 'inline-block';
+  btnSalvarPonto.onclick = function() {
+    mostrarPopupSalvarTempo();
+  };
+}
+
+// Função para mostrar popup de salvar tempo
+function mostrarPopupSalvarTempo() {
+  // Remove popup antigo se existir
+  let antigo = document.getElementById('popup-salvar-tempo');
+  if (antigo) antigo.remove();
+
+  // Cria o overlay
+  const overlay = document.createElement('div');
+  overlay.id = 'popup-salvar-tempo';
+  overlay.style.position = 'fixed';
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.background = 'rgba(0,0,0,0.45)';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.zIndex = 999999;
+
+  // Cria o conteúdo do popup
+  const box = document.createElement('div');
+  box.style.background = '#222';
+  box.style.color = '#fff';
+  box.style.padding = '32px 24px 24px 24px';
+  box.style.borderRadius = '18px';
+  box.style.boxShadow = '0 8px 32px #000a';
+  box.style.textAlign = 'center';
+  box.style.position = 'relative';
+  box.style.maxWidth = '90vw';
+  box.style.minWidth = '260px';
+  box.innerHTML = `
+    <h2 style="margin-top:0;font-size:1.3rem;">💾 Salvar ponto</h2>
+    <div style="margin-bottom:14px;font-size:1rem;">Informe o tempo para continuar depois:</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:18px;">
+      <input id="input-horas" type="number" min="0" max="99" placeholder="Horas" style="width:60px;padding:8px;border-radius:8px;border:none;font-size:1rem;background:#111;color:#fff;">
+      <input id="input-minutos" type="number" min="0" max="59" placeholder="Min" style="width:60px;padding:8px;border-radius:8px;border:none;font-size:1rem;background:#111;color:#fff;">
+      <input id="input-segundos" type="number" min="0" max="59" placeholder="Seg" style="width:60px;padding:8px;border-radius:8px;border:none;font-size:1rem;background:#111;color:#fff;">
+    </div>
+    <button id="btn-confirmar-salvar-tempo" style="background:#1db954;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:1rem;cursor:pointer;">Salvar</button>
+    <button id="btn-cancelar-salvar-tempo" style="margin-left:10px;background:#e50914;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:1rem;cursor:pointer;">Cancelar</button>
+    <div id="msg-erro-tempo" style="color:#e50914;font-size:1rem;margin-top:10px;display:none;"></div>
+  `;
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  // Foco no primeiro campo
+  setTimeout(() => { document.getElementById('input-horas').focus(); }, 200);
+
+  // Cancelar
+  document.getElementById('btn-cancelar-salvar-tempo').onclick = function() {
+    overlay.remove();
+  };
+
+  // Fechar ao clicar fora do box
+  overlay.onclick = function(e) {
+    if (e.target === overlay) overlay.remove();
+  };
+
+  // Salvar
+  document.getElementById('btn-confirmar-salvar-tempo').onclick = function() {
+    let horas = parseInt(document.getElementById('input-horas').value, 10);
+    let min = parseInt(document.getElementById('input-minutos').value, 10);
+    let seg = parseInt(document.getElementById('input-segundos').value, 10);
+    if (isNaN(horas)) horas = 0;
+    if (isNaN(min)) min = 0;
+    if (isNaN(seg)) seg = 0;
+    if (horas < 0) horas = 0;
+    if (min < 0) min = 0;
+    if (seg < 0) seg = 0;
+    const tempoTotal = horas * 3600 + min * 60 + seg;
+    if (tempoTotal <= 0) {
+      document.getElementById('msg-erro-tempo').textContent = "Informe um tempo válido!";
+      document.getElementById('msg-erro-tempo').style.display = "block";
+      return;
+    }
+    // Chama o mesmo código do seu btnSalvarPonto original
+    btnSalvarPonto._salvarTempo(tempoTotal);
+    overlay.remove();
+  };
+}
+
+// Adicione este método ao botão para reaproveitar seu código original
+btnSalvarPonto._salvarTempo = function(tempoTotal) {
+  let usuario = localStorage.getItem('usuarioLogado');
+  let link = iframePlayer.src.split('?')[0];
+  let idVideo = link;
+  let info = {};
+  let infoEpisodio = window.episodioAtualInfo;
+  let isTrailer = false;
+  let filmeOuSerie = null;
+  function tituloValido(t) {
+    return t && !/^https?:\/+/.test(t);
+  }
+  function imagemValida(img) {
+    if (!img) return false;
+    img = img.trim();
+    return /^imagens\/.+\.(jpg|jpeg|png|webp)$/i.test(img);
+  }
+  function normalizar(s) {
+    return s ? s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w]/g, '').toLowerCase() : '';
+  }
+  if (link && link.includes("youtube.com")) {
+    filmeOuSerie = (typeof dados !== "undefined" ? dados : []).find(f =>
+      f.trailer && (f.trailer === link || f.trailer.split('?')[0] === link.split('?')[0])
+    );
+    isTrailer = true;
+  } else if (infoEpisodio && (infoEpisodio.tipo === 'series' || infoEpisodio.tipo === 'serie')) {
+    let serieTitulo = infoEpisodio.serie && infoEpisodio.serie.titulo ? infoEpisodio.serie.titulo : '';
+    let serieDados = null;
+    if (serieTitulo && typeof dados !== 'undefined') {
+      serieDados = dados.find(f => (f.tipo === 'series' || f.tipo === 'serie') && normalizar(f.titulo) === normalizar(serieTitulo));
+    }
+    if (!serieDados && serieTitulo && typeof dados !== 'undefined') {
+      serieDados = dados.find(f => normalizar(f.titulo) === normalizar(serieTitulo));
+    }
+    if (serieDados && imagemValida(serieDados.imagem)) {
+      let imagem = serieDados.imagem;
+      let titulo = tituloValido(serieDados.titulo) ? serieDados.titulo : (serieTitulo || 'Série');
+      let temporada = infoEpisodio.temporada || '';
+      let episodio = infoEpisodio.episodio || '';
+      // Garante que todos os campos necessários estão presentes
+      info = {
+        tipo: 'series',
+        imagem: imagem || '',
+        titulo: titulo || '',
+        temporada: temporada || '',
+        episodio: episodio || '',
+        video: link
+      };
+    } else {
+      return;
+    }
+  } else {
+    filmeOuSerie = (typeof dados !== "undefined" ? dados : []).find(f =>
+      f.video && (f.video === link || f.video.split('?')[0] === link.split('?')[0])
+    );
+    if (filmeOuSerie) {
+      if (imagemValida(filmeOuSerie.imagem)) {
+        let imagem = filmeOuSerie.imagem;
+        let titulo = tituloValido(filmeOuSerie.titulo) ? filmeOuSerie.titulo : 'Filme';
+        info = {
+          titulo,
+          imagem,
+          video: link,
+          tipo: filmeOuSerie.tipo,
+          ano: filmeOuSerie.ano || "",
+          descricao: filmeOuSerie.descricao || ""
+        };
+      } else {
+        return;
+      }
+    } else {
+      return;
+    }
+  }
+  if (isTrailer && filmeOuSerie) {
+    if (imagemValida(filmeOuSerie.imagem)) {
+      info = {
+        titulo: tituloValido(filmeOuSerie.titulo) ? `Trailer: ${filmeOuSerie.titulo}` : 'Trailer',
+        imagem: filmeOuSerie.imagem,
+        video: link,
+        tipo: 'trailer',
+        ano: filmeOuSerie.ano || "",
+        descricao: filmeOuSerie.descricao || ""
+      };
+    } else {
+      return;
+    }
+  }
+  // Garante que info sempre tem todos os campos necessários
+  if (!info.titulo) info.titulo = 'Conteúdo';
+  if (!info.imagem) info.imagem = imagem;
+  if (!info.video) info.video = link;
+  if (!info.tipo) info.tipo = 'conteudo';
+  salvarTempoAssistido(usuario, idVideo, tempoTotal, info);
+  renderizarContinuarAssistindo();
+  // Popup de sucesso
+  let antigo = document.getElementById('popup-salvo-ponto');
+  if (antigo) antigo.remove();
+  const overlay = document.createElement('div');
+  overlay.id = 'popup-salvo-ponto';
+  overlay.style.position = 'fixed';
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.background = 'rgba(0,0,0,0.35)';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.zIndex = 999999;
+  const box = document.createElement('div');
+  box.style.background = '#222';
+  box.style.color = '#fff';
+  box.style.padding = '32px 24px 24px 24px';
+  box.style.borderRadius = '18px';
+  box.style.boxShadow = '0 8px 32px #000a';
+  box.style.textAlign = 'center';
+  box.style.position = 'relative';
+  box.style.maxWidth = '90vw';
+  box.style.minWidth = '240px';
+  box.innerHTML = `
+    <div style="font-size:2.2rem;margin-bottom:10px;">💾</div>
+    <h2 style="margin-top:0;font-size:1.3rem;">Ponto salvo com sucesso!</h2>
+    <div style="font-size:1rem;color:#1db954;margin-bottom:10px;">Você pode continuar de onde parou.</div>
+    <button id="btn-fechar-ponto" style="margin-top:10px;padding:8px 22px;font-size:1rem;border:none;border-radius:8px;background:#1db954;color:#fff;cursor:pointer;">OK</button>
+  `;
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  document.getElementById('btn-fechar-ponto').onclick = function() {
+    overlay.remove();
+  };
+  overlay.onclick = function(e) {
+    if (e.target === overlay) overlay.remove();
+  };
+};
+
+// Corrige o botão "Limpar Histórico"
+document.getElementById('btn-limpar-historico').onclick = function() {
+  mostrarPopupConfirmarLimparHistorico();
+};
+
+function mostrarPopupConfirmarLimparHistorico() {
+  let antigo = document.getElementById('popup-confirmar-limpar');
+  if (antigo) antigo.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'popup-confirmar-limpar';
+  overlay.style.position = 'fixed';
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.background = 'rgba(0,0,0,0.45)';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.zIndex = 999999;
+
+  const box = document.createElement('div');
+  box.style.background = '#222';
+  box.style.color = '#fff';
+  box.style.padding = '32px 24px 24px 24px';
+  box.style.borderRadius = '18px';
+  box.style.boxShadow = '0 8px 32px #000a';
+  box.style.textAlign = 'center';
+  box.style.position = 'relative';
+  box.style.maxWidth = '90vw';
+  box.style.minWidth = '260px';
+  box.innerHTML = `
+    <h2 style="margin-top:0;font-size:1.3rem;">Limpar histórico?</h2>
+    <div style="margin-bottom:14px;font-size:1rem;">Tem certeza que deseja apagar todo o histórico de continuar assistindo?</div>
+    <button id="btn-confirmar-limpar" style="background:#e50914;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:1rem;cursor:pointer;">Sim, apagar</button>
+    <button id="btn-cancelar-limpar" style="margin-left:10px;background:#444;color:#fff;border:none;padding:10px 22px;border-radius:8px;font-size:1rem;cursor:pointer;">Cancelar</button>
+  `;
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  document.getElementById('btn-cancelar-limpar').onclick = function() {
+    overlay.remove();
+  };
+
+  document.getElementById('btn-confirmar-limpar').onclick = function() {
+    const usuario = localStorage.getItem('usuarioLogado');
+    if (!usuario) return;
+    const prefix = `visto_${usuario}_`;
+
+
+    const chavesParaRemover = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k.startsWith(prefix)) chavesParaRemover.push(k);
+    }
+    chavesParaRemover.forEach(k => localStorage.removeItem(k));
+    renderizarContinuarAssistindo();
+    overlay.remove();
+  };
+
+  overlay.onclick = function(e) {
+    if (e.target === overlay) overlay.remove();
+  };
+}
+
+function mostrarPopupPix() {
+  let antigo = document.getElementById('popup-pix');
+  if (antigo) antigo.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'popup-pix';
+  overlay.style.position = 'fixed';
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = '100vw';
+  overlay.style.height = '100vh';
+  overlay.style.background = 'rgba(0,0,0,0.45)';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.zIndex = 999999;
+
+  const box = document.createElement('div');
+  box.style.background = '#222';
+  box.style.color = '#fff';
+  box.style.padding = '32px 24px 24px 24px';
+  box.style.borderRadius = '18px';
+  box.style.boxShadow = '0 8px 32px #000a';
+  box.style.textAlign = 'center';
+  box.style.position = 'relative';
+  box.style.maxWidth = '90vw';
+  box.style.minWidth = '260px';
+  box.innerHTML = `
+    <h2 style="margin-top:0;font-size:1.5rem;">💸 Apoie o KzFlix!</h2>
+    <p style="font-size:1.1rem;margin-bottom:18px;">Chave PIX:</p>
+    <div style="background:#111;padding:12px 10px;border-radius:8px;font-size:1.1rem;letter-spacing:1px;user-select:all;word-break:break-all;margin-bottom:12px;">
+      <b id="pix-chave" style="font-size:1.15rem;">pixkzinn@gmail.com</b>
+      <button id="btn-copiar-pix" style="margin-left:10px;padding:4px 10px;font-size:1rem;border:none;border-radius:6px;background:#1db954;color:#fff;cursor:pointer;">Copiar</button>
+    </div>
+    <div style="font-size:1rem;color:#1db954;margin-bottom:10px;">Muito obrigado pelo apoio! 🙏</div>
+    <button id="btn-fechar-pix" style="margin-top:10px;padding:8px 22px;font-size:1rem;border:none;border-radius:8px;background:#e50914;color:#fff;cursor:pointer;">Fechar</button>
+  `;
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  document.getElementById('btn-fechar-pix').onclick = function() {
+    overlay.remove();
+  };
+  document.getElementById('btn-copiar-pix').onclick = function() {
+    const chave = document.getElementById('pix-chave').textContent;
+    navigator.clipboard.writeText(chave);
+    this.textContent = 'Copiado!';
+    setTimeout(() => { this.textContent = 'Copiar'; }, 1500);
+  };
+  overlay.onclick = function(e) {
+    if (e.target === overlay) overlay.remove();
+  };
+}
+</script>
+</div>
+</body>
+</html>
