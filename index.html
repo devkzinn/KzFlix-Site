@@ -1231,7 +1231,7 @@ function obterTempoAssistido(usuario, idVideo) {
 
 // Renderiza os cards de continuar assistindo
 function renderizarContinuarAssistindo() {
-  const usuario = localStorage.getItem('usuarioLogado');
+  const usuario = getUsuario();
   const container = document.getElementById('vitrine-continuar');
   const btnLimpar = document.getElementById('btn-limpar-historico');
   const secao = document.getElementById('continuar-assistindo');
@@ -1239,13 +1239,14 @@ function renderizarContinuarAssistindo() {
   container.innerHTML = '';
   const vistos = obterContinuarAssistindo(usuario);
 
-  // Mostra ou esconde o botão de limpar histórico
-  if (btnLimpar) btnLimpar.style.display = vistos.length ? 'inline-block' : 'none';
-  // Mostra ou esconde toda a seção "Continuar Assistindo"
-  if (secao) secao.style.display = vistos.length ? 'block' : 'none';
+  // Exibe a seção apenas se houver pelo menos um item do tipo 'trailer'
+  const temTrailerSalvo = Array.isArray(vistos) && vistos.some(v => v && v.tipo === 'trailer' && (v.trailer || v.video));
 
-  if (!vistos.length) {
-    container.innerHTML = "<p style='text-align:center;width:100%;color:#aaa;'>Nenhum conteúdo assistido.</p>";
+  if (btnLimpar) btnLimpar.style.display = temTrailerSalvo ? 'inline-block' : 'none';
+  if (secao) secao.style.display = temTrailerSalvo ? 'block' : 'none';
+
+  if (!temTrailerSalvo) {
+    container.innerHTML = "<p style='text-align:center;width:100%;color:#aaa;'>Nenhum trailer salvo para continuar.</p>";
     return;
   }
   vistos.forEach(obj => {
