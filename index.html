@@ -60,7 +60,7 @@
   </section>
 
   <!-- Cria a seção "Continuar Assistindo" abaixo dos lançamentos -->
-  <section id="continuar-assistindo" style="margin: 40px 0; position: relative; background: linear-gradient(90deg,#181818 0%,#222 100%); border-radius: 18px; box-shadow: 0 4px 24px #0004; padding: 28px 18px 24px 18px;">
+  <section id="continuar-assistindo" style="display:none; margin: 40px 0; position: relative; background: linear-gradient(90deg,#181818 0%,#222 100%); border-radius: 18px; box-shadow: 0 4px 24px #0004; padding: 28px 18px 24px 18px;">
     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px;">
       <h2 style="font-size:1.5rem; color:#fff; margin:0; font-weight:bold; letter-spacing:1px; text-shadow:0 2px 8px #0008;">⏳ Continuar Assistindo</h2>
       <button id="btn-limpar-historico" style="background:#e50914;color:#fff;border:none;padding:8px 18px;border-radius:24px;cursor:pointer;font-size:14px;display:none;box-shadow:0 2px 8px #0004;">🗑️ Limpar Histórico</button>
@@ -1852,6 +1852,13 @@ function mostrarPopupPix() {
     if (e.target === overlay) overlay.remove();
   };
 }
+// Ensure 'Continuar Assistindo' is initialized after DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    // call the renderer which will show the section only if a trailer is saved
+    if (typeof renderizarContinuarAssistindo === 'function') renderizarContinuarAssistindo();
+  } catch (e) { console.error(e); }
+});
 </script>
 </div>
 </body>
